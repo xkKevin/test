@@ -42,7 +42,7 @@
             collapse: 0px;
         }
         /*#pictures{*/
-        /*position: relative;*/
+            /*position: relative;*/
         /*}*/
         #pictures{
             text-align: center;
@@ -63,38 +63,35 @@
             text-align: center;
         }
     </style>
-    <script type="text/javascript">
-        var pictures=document.getElementById("pictures");
-        window.onload=function () {
-            pictures.style.visibility="hidden";
-        }
-    </script>
 </head>
 <?php
 $host="localhost";
 $userName="root";
 $password="xk0819";
 $connID=mysqli_connect($host,$userName,$password,"picture");//成功为1，失败为0；
-$AtotalRecord=mysqli_query($connID,"select count(*) from picture");
-$rTRecordA=mysqli_fetch_array($AtotalRecord,MYSQLI_NUM);
-$totalRecords=$rTRecordA[0];//总记录
+//echo $connID;
+//$conn=mysqli_select_db($connID,"picture");
+/*
+if($conn){
+    echo"数据库选择成功";
+}
+else{
+    echo "<script type='text/javascript'>alert('数据库选择失败!');</script>";
+}
+*/
+//for ($i=12;$i<=18;$i++){
+//    //mysqli_query($connID,"insert into picture values ('00$i','p/$i.jpg','c$i','2017-5-$i',0)");
+//    mysqli_query($connID,"update picture set id='0$i' where id='00$i'");
+//}
+$result = mysqli_query($connID,"select * from picture");
+$resultall=mysqli_fetch_all($result, MYSQLI_NUM);
 ?>
 <body>
 <h3>Your album</h3>
 <div id="Fcontent" align="center">
     <table id="tb" align="center">
-        <!--        <caption id="title_1" >Your album</caption>-->
+<!--        <caption id="title_1" >Your album</caption>-->
         <?php
-        $currentPage=1;
-        $pageRecord=4;
-        $allpages=ceil($totalRecords/$pageRecord);
-        if(isset($_GET["previous"])||isset($_GET["next"])||isset($_GET["page"])){
-            $currentPage=$_GET["page"];
-        }
-        $start=($currentPage-1)*$pageRecord;
-        $result = mysqli_query($connID,"select * from picture limit $start,$pageRecord");
-        $resultall=mysqli_fetch_all($result, MYSQLI_NUM);
-        //        var_dump($resultall);
         foreach ($resultall as $key=>$value){
             if($key%2==0){
                 echo "<tr>\n";
@@ -112,39 +109,51 @@ $totalRecords=$rTRecordA[0];//总记录
     <h2 id="title_2" ></h2>
     <img id="img_id" width="1080px" height="700px" onclick="pictures.style.visibility='hidden'">
 </div>
-
-<div align="center">
-    <form method="GET" name="form1">
-        <a href="p6.php?page=<?php echo $currentPage<=1?$currentPage:$currentPage-1; ?>">上一页</a>
-        <a href="p6.php?page=<?php echo $currentPage>=$allpages?$currentPage:$currentPage+1; ?>">下一页</a>
-<!--        <input type="submit" value="上一页" name="previous" onclick="changePage(-1)">-->
-<!--        <input type="submit" value="下一页" name="next" onclick="changePage(1)">-->
-        跳转至第<input id="Cpage" type="text" size="1" name="page">页
-        <input type="submit" value="确定" onclick="return changePage()">
-        当前第<b id="bid"><?php echo $currentPage;?></b>页&nbsp;共<b id="allpages"><?php echo $allpages;?></b>页
-    </form>
+<div id="pages">
+    <input type="button" value="上一页" onclick="changPage(-1)">
+    <input type="button" value="下一页" onclick="changPage(1)">
+    跳转至第<input id="Cpage" type="text" size="1" value="1">页
+    <input type="button" value="确定" onclick="showPage()">
+    当前第<b id="bid">1</b>页
 </div>
 
 <script type="text/javascript">
+    var Fcontent=document.getElementById("Fcontent");
+    var pages=document.getElementById("pages");
     var title_2=document.getElementById("title_2");
     var pictures=document.getElementById("pictures");
     var img_id=document.getElementById("img_id");
-    var Cpage=document.getElementById("Cpage");
+    var pgindex=1;
     function Layer_HideOrShow(PUrl,PName,PDate){
         title_2.innerHTML="name:"+PName+"&nbsp;date:"+PDate;
         img_id.src=PUrl;
         pictures.style.visibility="visible";
     }
-    function changePage(){
-        var allpages=parseInt(document.getElementById("allpages").innerHTML);
-        var pgindex=parseInt(document.getElementById("Cpage").value);
-//            alert(allpages+"ajhgd"+pgindex);
-        if(pgindex>allpages||pgindex<1) {
+    window.onload=function () {
+        pictures.style.visibility="hidden";
+    }
+    var allpages=Math.ceil(parseInt(Fcontent.scrollHeight)/parseInt(Fcontent.offsetHeight));
+    pages.innerHTML+="&nbsp;"+"<b>共"+allpages+"页</b>";
+    function showPage(){
+        pgindex=document.getElementById("Cpage").value;
+        if(pgindex>allpages||pgindex<1){
             alert(pgindex+"页数不在范围内");
-            return false;
+        } else{
+            var bid=document.getElementById("bid");
+            bid.innerHTML=pgindex;
+            Fcontent.scrollTop=(pgindex-1)*parseInt(Fcontent.offsetHeight);
         }
-        document.getElementById("bid").innerHTML=pgindex;
-        Cpage.value=pgindex;
+    }
+    function changPage(i){
+        if(i==1){
+            if(pgindex==allpages) {alert("已至末页");}
+            else {pgindex++;}
+        }else{
+            if(pgindex==1) {alert("已至首页");}
+            else {pgindex--;}
+        }
+        bid.innerHTML=pgindex;
+        Fcontent.scrollTop=(pgindex-1)*parseInt(Fcontent.offsetHeight);
     }
 </script>
 
